@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine;
+using UnityEngine.Scripting.APIUpdating;
 
 public class Snake : MonoBehaviour
 {
@@ -27,6 +28,11 @@ public class Snake : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        
+        temporizadorMovimento -= Time.deltaTime;
+        if (temporizadorMovimento <= 0 )
+        {
+            Move();
+            temporizadorMovimento = intervaloMovimento;
+        }
     }
 }
