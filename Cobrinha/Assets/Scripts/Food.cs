@@ -4,6 +4,10 @@ using UnityEngine;
 
 public class Food : MonoBehaviour
 {
+    public Transform foodPrefab;
+    public Snake snake;
+
+    private Transform currentFood;
     // Start is called before the first frame update
     void Start()
     {
@@ -14,6 +18,24 @@ public class Food : MonoBehaviour
     void Update()
     {
         
+    }
+    bool IsPositionOccupied(Vector2 position)
+    {
+        // Verifica se a posição coincide com a posição da cabeça da cobra
+        if ((Vector2)snake.transform.position == position)
+        {
+            return true; // A posição está ocupada pela cabeça
+        }
+
+        // Verifica se a posição coincide com algum segmento do corpo da cobra
+        foreach (Transform segment in snake.body)
+        {
+            if ((Vector2)segment.position == position)
+            {
+                return true; // A posição está ocupada
+            }
+        }
+        return false; // A posição está livre
     }
     void SpawnFood()
     {
