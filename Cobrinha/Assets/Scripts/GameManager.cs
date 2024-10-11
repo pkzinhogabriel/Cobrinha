@@ -5,7 +5,7 @@ using UnityEngine;
 
 public class GameManager : MonoBehaviour
 {
-    
+    public Snake snake;
     public TextMeshProUGUI ScoreText;
     public TextMeshProUGUI HighScoreText;
     public TextMeshProUGUI gameOverText;
@@ -33,9 +33,16 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    // Update is called once per frame
-    void Update()
+    public void GameOver()
     {
-        
+        gameOverText.gameObject.SetActive(true);
+    }
+
+    public void Restart()
+    {
+        score = 0;
+        UpdateScore(0);
+        snake.Restart();
+        gameOverText.gameObject.SetActive(false);
     }
 }
