@@ -26,7 +26,15 @@ public class Snake : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        
+        if (gameOver)
+        {
+            if (Input.GetKeyDown(KeyCode.R)) gameManager.Restart();
+            return;
+        }
+
+        ChangeDirection();
+        Move();
+        CheckBodyCollisions();
     }
     void ChangeDirection()
     {
@@ -78,7 +86,7 @@ public class Snake : MonoBehaviour
             position = body[body.Count - 1].position;
 
         body.Add(Instantiate(bodyPrefab, position, Quaternion.identity).transform);
-        
+        gameManager.UpdateScore(1);
     }
     void CheckBodyCollisions()
     {
@@ -96,7 +104,8 @@ public class Snake : MonoBehaviour
     void GameOver()
     {
         gameOver = true;
-        
+        gameManager.GameOver();
+
     }
     public void Restart()
     {
