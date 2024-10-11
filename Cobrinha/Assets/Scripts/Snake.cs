@@ -6,6 +6,7 @@ using UnityEngine;
 public class Snake : MonoBehaviour
 {
     public Transform bodyPrefab;
+    public Transform wallPrefab;
     public GameManager gameManager;
     private Vector2 direction;
     private float changeCellTime = 0;
@@ -128,8 +129,38 @@ public class Snake : MonoBehaviour
         // Ajuste a lógica para criar paredes com base nos novos valores
         CreateWalls(width, height);
     }
-    void CreateWalls(float width,float height)
+    void CreateWalls(float width, float height)
     {
+        // Armazenar largura e altura da área de jogo
+        gameWidth = width;
+        gameHeight = height;
 
+        // Calcular os limites da área de jogo
+        int cellX = Mathf.FloorToInt(width / cellSize / 2);
+        int cellY = Mathf.FloorToInt(height / cellSize / 2);
+
+        // Limpar paredes existentes
+        foreach (GameObject wall in GameObject.FindGameObjectsWithTag("Wall"))
+        {
+            Destroy(wall);
+        }
+
+        // Criar paredes superior e inferior
+        for (int i = -cellX; i <= cellX; i++)
+        {
+            Vector2 top = new Vector2(i * cellSize, cellY * cellSize);
+            Vector2 bottom = new Vector2(i * cellSize, -cellY * cellSize);
+            Instantiate(wallPrefab, top, Quaternion.identity).tag = "Wall";
+            Instantiate(wallPrefab, bottom, Quaternion.identity).tag = "Wall";
+        }
+
+        // Criar paredes esquerda e direita
+        for (int i = -cellY; i <= cellY; i++)
+        {
+            Vector2 left = new Vector2(-cellX * cellSize, i * cellSize);
+            Vector2 right = new Vector2(cellX * cellSize, i * cellSize);
+            Instantiate(wallPrefab, left, Quaternion.identity).tag = "Wall";
+            Instantiate(wallPrefab, right, Quaternion.identity).tag = "Wall";
+        }
     }
 }
