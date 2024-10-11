@@ -15,6 +15,7 @@ public class Snake : MonoBehaviour
     public Vector2 cellIndex = Vector2.zero;
     private float gameWidth;
     private float gameHeight;
+    private bool gameOver = false;
     // Start is called before the first frame update
     void Start()
     {
@@ -92,6 +93,42 @@ public class Snake : MonoBehaviour
         }
     }
     void GameOver()
+    {
+        gameOver = true;
+        
+    }
+    public void Restart()
+    {
+        gameOver = false;
+
+        // Limpar corpo da cobra
+        for (int i = 0; i < body.Count; ++i)
+        {
+            Destroy(body[i].gameObject);
+        }
+        body.Clear();
+
+        // Resetar posicao da cobra
+        transform.position = Vector3.zero;
+    }
+    public float GetWidth()
+    {
+        return gameWidth;
+    }
+    public float GetHeight()
+    {
+        return gameHeight;
+    }
+    public void SetSpeed(float newSpeed)
+    {
+        speed = newSpeed;
+    }
+    public void SetGameArea(float width, float height)
+    {
+        // Ajuste a lógica para criar paredes com base nos novos valores
+        CreateWalls(width, height);
+    }
+    void CreateWalls(float width,float height)
     {
 
     }
