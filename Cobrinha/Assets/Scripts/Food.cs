@@ -17,7 +17,14 @@ public class Food : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        
+        // Verifica se a cobra comeu o alimento
+        Vector2 index = currentFood.position / snake.cellSize;
+        if (Mathf.Abs(index.x - snake.cellIndex.x) < 0.5f && Mathf.Abs(index.y - snake.cellIndex.y) < 0.5f)
+        {
+            // Se a cobra comeu, gera um novo alimento
+            SpawnFood();
+            snake.GrowBody(); // Aumenta o corpo da cobra
+        }
     }
     bool IsPositionOccupied(Vector2 position)
     {
