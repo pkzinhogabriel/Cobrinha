@@ -12,6 +12,8 @@ public class Snake : MonoBehaviour
     public float speed = 10.0f;
     public float cellSize = 0.3f;
     public Vector2 cellIndex = Vector2.zero;
+    private float gameWidth;
+    private float gameHeight;
     // Start is called before the first frame update
     void Start()
     {
@@ -56,6 +58,14 @@ public class Snake : MonoBehaviour
     }
     void CheckWallWrapAround()
     {
+        if (transform.position.x > gameWidth / 2)
+            transform.position = new Vector3(-gameWidth / 2 + 0.01f, transform.position.y, transform.position.z);
+        else if (transform.position.x < -gameWidth / 2)
+            transform.position = new Vector3(gameWidth / 2 - 0.01f, transform.position.y, transform.position.z);
 
+        if (transform.position.y > gameHeight / 2)
+            transform.position = new Vector3(transform.position.x, -gameHeight / 2 + 0.01f, transform.position.z);
+        else if (transform.position.y < -gameHeight / 2)
+            transform.position = new Vector3(transform.position.x, gameHeight / 2 - 0.01f, transform.position.z);
     }
 }
