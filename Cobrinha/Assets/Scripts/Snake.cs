@@ -5,6 +5,7 @@ using UnityEngine;
 
 public class Snake : MonoBehaviour
 {
+    public Transform bodyPrefab;
     public GameManager gameManager;
     private Vector2 direction;
     private float changeCellTime = 0;
@@ -67,5 +68,31 @@ public class Snake : MonoBehaviour
             transform.position = new Vector3(transform.position.x, -gameHeight / 2 + 0.01f, transform.position.z);
         else if (transform.position.y < -gameHeight / 2)
             transform.position = new Vector3(transform.position.x, gameHeight / 2 - 0.01f, transform.position.z);
+    }
+    public void GrowBody()
+    {
+        Vector2 position = transform.position;
+        if (body.Count != 0)
+            position = body[body.Count - 1].position;
+
+        body.Add(Instantiate(bodyPrefab, position, Quaternion.identity).transform);
+        
+    }
+    void CheckBodyCollisions()
+    {
+        if (body.Count < 3) return;
+        for (int i = 0; i < body.Count; i++)
+        {
+            Vector2 index = body[i].position / cellSize;
+            if (Mathf.Abs(index.x - cellIndex.x)< 0.00001f && Mathf.Abs(index.y - cellIndex.y)<0.00001f)
+            {
+                GameOver();
+                break;
+            }
+        }
+    }
+    void GameOver()
+    {
+
     }
 }
