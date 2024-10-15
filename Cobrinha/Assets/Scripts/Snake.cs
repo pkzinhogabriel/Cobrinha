@@ -17,6 +17,7 @@ public class Snake : MonoBehaviour // Classe responsavel por controlar o comport
     private float gameWidth;
     private float gameHeight;
     private bool gameOver = false; 
+    private int[,] wallGrid;
     
     void Start() // Metodo chamado no inicio do jogo.
     {
@@ -139,38 +140,56 @@ public class Snake : MonoBehaviour // Classe responsavel por controlar o comport
         // Ajuste a lógica para criar paredes com base nos novos valores
         CreateWalls(width, height);
     }
-    void CreateWalls(float width, float height)  // Metodo que cria as paredes da area de jogo.
+    // Adicionar a matriz de grid para paredes
+
+
+void CreateWalls(float width, float height)
+{
+    // Armazenar largura e altura da área de jogo
+    gameWidth = width;
+    gameHeight = height;
+
+    // Calcular os limites da área de jogo
+    int cellX = Mathf.FloorToInt(width / cellSize / 2);
+    int cellY = Mathf.FloorToInt(height / cellSize / 2);
+
+    // Inicializar a matriz de grid para paredes com base no tamanho do campo
+    wallGrid = new int[cellX * 2 + 1, cellY * 2 + 1];
+
+    // Limpar paredes existentes
+    foreach (GameObject wall in GameObject.FindGameObjectsWithTag("Wall"))
     {
-        // Armazenar largura e altura da área de jogo
-        gameWidth = width;
-        gameHeight = height;
-
-        // Calcular os limites da área de jogo
-        int cellX = Mathf.FloorToInt(width / cellSize / 2);
-        int cellY = Mathf.FloorToInt(height / cellSize / 2);
-
-        // Limpar paredes existentes
-        foreach (GameObject wall in GameObject.FindGameObjectsWithTag("Wall"))
-        {
-            Destroy(wall);
-        }
-
-        // Criar paredes superior e inferior
-        for (int i = -cellX; i <= cellX; i++)
-        {
-            Vector2 top = new Vector2(i * cellSize, cellY * cellSize);
-            Vector2 bottom = new Vector2(i * cellSize, -cellY * cellSize);
-            Instantiate(wallPrefab, top, Quaternion.identity).tag = "Wall";
-            Instantiate(wallPrefab, bottom, Quaternion.identity).tag = "Wall";
-        }
-
-        // Criar paredes esquerda e direita
-        for (int i = -cellY; i <= cellY; i++)
-        {
-            Vector2 left = new Vector2(-cellX * cellSize, i * cellSize);
-            Vector2 right = new Vector2(cellX * cellSize, i * cellSize);
-            Instantiate(wallPrefab, left, Quaternion.identity).tag = "Wall";
-            Instantiate(wallPrefab, right, Quaternion.identity).tag = "Wall";
-        }
+        Destroy(wall);
     }
+
+    // Criar paredes superior e inferior
+    for (int i = -cellX; i <= cellX; i++)
+    {
+        Vector2 top = new Vector2(i * cellSize, cellY * cellSize);
+        Vector2 bottom = new Vector2(i * cellSize, -cellY * cellSize);
+
+        Instantiate(wallPrefab, top, Quaternion.identity).tag = "Wall";
+        Instantiate(wallPrefab, bottom, Quaternion.identity).tag = "Wall";
+
+        // Marcar as posições das paredes na matriz
+        wallGrid[i + cellX, cellY] = 1;     // Parede superior
+        wallGrid[i + cellX, 0] = 1;         // Parede inferior
+    }
+
+    // Criar paredes esquerda e direita
+    for (int i = -cellY; i <= cellY; i++)
+    {
+        Vector2 left = new Vector2(-cellX * cellSize, i * cellSize);
+        Vector2 right = new Vector2(cellX * cellSize, i * cellSize);
+
+        Instantiate(wallPrefab, left, Quaternion.identity).tag = "Wall";
+        Instantiate(wallPrefab, right, Quaternion.identity).tag = "Wall";
+
+        // Marcar as posições das paredes na matriz
+        wallGrid[0, i + cellY] = 1;         // Parede esquerda
+        wallGrid[cellX * 2, i + cellY] = 1; // Parede direita
+    }
+}
+
+
 }
