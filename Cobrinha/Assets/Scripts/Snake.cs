@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using UnityEngine;
 
-public class Snake : MonoBehaviour
+public class Snake : MonoBehaviour // Classe responsavel por controlar o comportamento da cobra no jogo.
 {
     public Transform bodyPrefab;
     public Transform wallPrefab;
@@ -16,9 +16,9 @@ public class Snake : MonoBehaviour
     public Vector2 cellIndex = Vector2.zero;
     private float gameWidth;
     private float gameHeight;
-    private bool gameOver = false;
-    // Start is called before the first frame update
-    void Start()
+    private bool gameOver = false; 
+    
+    void Start() // Metodo chamado no inicio do jogo.
     {
         direction = Vector2.up;
     }
@@ -28,7 +28,7 @@ public class Snake : MonoBehaviour
     {
         if (gameOver)
         {
-            if (Input.GetKeyDown(KeyCode.R)) gameManager.Restart();
+            if (Input.GetKeyDown(KeyCode.R)) gameManager.Restart(); // Reinicia o jogo se apertar a tecla R apos o game over.
             return;
         }
 
@@ -36,10 +36,11 @@ public class Snake : MonoBehaviour
         Move();
         CheckBodyCollisions();
     }
-    void ChangeDirection()
+    void ChangeDirection() // Metodo para alterar a direcao da cobra com base na entrada do jogador.
     {
         Vector2 newdirection = Vector2.zero;
         Vector2 input = new Vector2(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical"));
+        // Altera a direcao conforme a tecla pressionada.
         if (input.y == -1) newdirection = Vector2.down;
         else if (input.y == 1) newdirection = Vector2.up;
         else if (input.x == -1) newdirection = Vector2.left;
@@ -49,7 +50,7 @@ public class Snake : MonoBehaviour
             direction = newdirection;
         }
     }
-    void Move()
+    void Move() // Metodo que move a cobra na direcao definida.
     {
         if (Time.time > changeCellTime)
         {
@@ -67,7 +68,7 @@ public class Snake : MonoBehaviour
             CheckWallWrapAround();
         }
     }
-    void CheckWallWrapAround()
+    void CheckWallWrapAround() // Metodo que verifica se a cobra atravessou a parede e ajusta a posicao.
     {
         if (transform.position.x > gameWidth / 2)
             transform.position = new Vector3(-gameWidth / 2 + 0.01f, transform.position.y, transform.position.z);
@@ -79,7 +80,7 @@ public class Snake : MonoBehaviour
         else if (transform.position.y < -gameHeight / 2)
             transform.position = new Vector3(transform.position.x, gameHeight / 2 - 0.01f, transform.position.z);
     }
-    public void GrowBody()
+    public void GrowBody()  // Metodo responsavel por aumentar o corpo da cobra ao comer alimento.
     {
         Vector2 position = transform.position;
         if (body.Count != 0)
@@ -88,7 +89,7 @@ public class Snake : MonoBehaviour
         body.Add(Instantiate(bodyPrefab, position, Quaternion.identity).transform);
         gameManager.UpdateScore(1);
     }
-    void CheckBodyCollisions()
+    void CheckBodyCollisions() // Metodo que verifica se a cobra colidiu com o proprio corpo.
     {
         if (body.Count < 3) return;
         for (int i = 0; i < body.Count; i++)
@@ -101,13 +102,13 @@ public class Snake : MonoBehaviour
             }
         }
     }
-    void GameOver()
+    void GameOver() // Metodo que termina o jogo ao ocorrer uma colisao.
     {
         gameOver = true;
         gameManager.GameOver();
 
     }
-    public void Restart()
+    public void Restart() // Metodo responsavel por reiniciar o jogo e resetar o estado da cobra.
     {
         gameOver = false;
 
@@ -121,24 +122,24 @@ public class Snake : MonoBehaviour
         // Resetar posicao da cobra
         transform.position = Vector3.zero;
     }
-    public float GetWidth()
+    public float GetWidth() // Metodo que retorna a largura da area de jogo.
     {
         return gameWidth;
     }
-    public float GetHeight()
+    public float GetHeight()  // Metodo que retorna a altura da area de jogo.
     {
         return gameHeight;
     }
-    public void SetSpeed(float newSpeed)
+    public void SetSpeed(float newSpeed) // Metodo para ajustar a velocidade da cobra.
     {
         speed = newSpeed;
     }
-    public void SetGameArea(float width, float height)
+    public void SetGameArea(float width, float height) // Metodo para ajustar a area de jogo.
     {
         // Ajuste a lógica para criar paredes com base nos novos valores
         CreateWalls(width, height);
     }
-    void CreateWalls(float width, float height)
+    void CreateWalls(float width, float height)  // Metodo que cria as paredes da area de jogo.
     {
         // Armazenar largura e altura da área de jogo
         gameWidth = width;

@@ -2,18 +2,19 @@ using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
-
+// Classe responsavel por gerenciar o menu de inicio do jogo.
 public class MenuManager : MonoBehaviour
 {
-    public static MenuManager Instance; 
+    public static MenuManager Instance; // Singleton da classe.
 
-    public Snake snake;
-    public TMP_InputField widthInput;
-    public TMP_InputField heightInput;
-    public TMP_InputField speedInput;
-    public GameObject startButton; 
-    public GameObject panel; 
-    private void Awake()
+    public Snake snake;// Referencia a cobra no jogo.
+    public TMP_InputField widthInput;// Campo de entrada para a largura da area de jogo.
+    public TMP_InputField heightInput;// Campo de entrada para a altura da area de jogo.
+    public TMP_InputField speedInput;// Campo de entrada para a velocidade da cobra.
+    public GameObject startButton; // Botao de inicio do jogo.
+    public GameObject panel; // Painel do menu inicial.
+
+    private void Awake() // Metodo chamado ao despertar o objeto. Implementa o padrao Singleton.
     {
         // Implementa o padrão Singleton
         if (Instance == null)
@@ -22,10 +23,10 @@ public class MenuManager : MonoBehaviour
         }
         else
         {
-            Destroy(gameObject);
+            Destroy(gameObject); // Garante que apenas uma instancia de MenuManager exista.
         }
     }
-    public void StartGame()
+    public void StartGame() // Metodo responsavel por iniciar o jogo ao configurar os parametros e esconder o menu.
     {
         float width, height, speed;
 
@@ -47,7 +48,7 @@ public class MenuManager : MonoBehaviour
             Debug.LogError("Por favor, insira valores válidos.");
         }
     }
-    private bool TryGetInputValues(out float width, out float height, out float speed)
+    private bool TryGetInputValues(out float width, out float height, out float speed) // Metodo que tenta obter e validar os valores de entrada do jogador.
     {
         width = height = speed = 0;
 
