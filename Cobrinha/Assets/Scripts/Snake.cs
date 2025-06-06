@@ -1,75 +1,106 @@
-using System.Collections;
 using System.Collections.Generic;
-using System.Runtime.CompilerServices;
 using UnityEngine;
+using Unity.Netcode;
 
-public class Snake : MonoBehaviour // Classe responsavel por controlar o comportamento da cobra no jogo.
+public class Snake : NetworkBehaviour
 {
     public Transform bodyPrefab;
     public Transform wallPrefab;
     public GameManager gameManager;
+
     private Vector2 direction;
-    private float changeCellTime = 0;
+    private float changeCellTime = 0f;
+
     public List<Transform> body = new List<Transform>();
-    public float speed = 10.0f;
+
+    public float speed = 5f; // Inicialize com valor padrão
     public float cellSize = 0.3f;
     public Vector2 cellIndex = Vector2.zero;
+
     private float gameWidth;
     private float gameHeight;
-    private bool gameOver = false; 
+
+    private bool gameOver = false;
+
     private int[,] wallGrid;
-    
-    void Start() // Metodo chamado no inicio do jogo.
+
+    void Start()
     {
         direction = Vector2.up;
+
+        if (gameManager == null)
+        {
+            gameManager = FindObjectOfType<GameManager>();
+        }
     }
 
-    // Update is called once per frame
     void Update()
     {
+        if (!IsOwner) return;
         if (gameOver)
         {
-            if (Input.GetKeyDown(KeyCode.R)) gameManager.Restart(); // Reinicia o jogo se apertar a tecla R apos o game over.
+            if (Input.GetKeyDown(KeyCode.R))
+            {
+                gameManager.Restart();
+            }
             return;
         }
 
         ChangeDirection();
+
         Move();
+
         CheckBodyCollisions();
     }
-    void ChangeDirection() // Metodo para alterar a direcao da cobra com base na entrada do jogador.
+
+    void ChangeDirection()
     {
-        Vector2 newdirection = Vector2.zero;
+        Vector2 newDirection = Vector2.zero;
         Vector2 input = new Vector2(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical"));
-        // Altera a direcao conforme a tecla pressionada.
-        if (input.y == -1) newdirection = Vector2.down;
-        else if (input.y == 1) newdirection = Vector2.up;
-        else if (input.x == -1) newdirection = Vector2.left;
-        else if (input.x == 1) newdirection = Vector2.right;
-        if (newdirection + newdirection != Vector2.zero && newdirection != Vector2.zero)
+
+        if (input.y == -1) newDirection = Vector2.down;
+        else if (input.y == 1) newDirection = Vector2.up;
+        else if (input.x == -1) newDirection = Vector2.left;
+        else if (input.x == 1) newDirection = Vector2.right;
+
+        // Impede que a cobra inverta a direção diretamente
+        if (newDirection != Vector2.zero && newDirection + direction != Vector2.zero)
         {
-            direction = newdirection;
+            direction = newDirection;
         }
     }
-    void Move() // Metodo que move a cobra na direcao definida.
+
+    void Move()
     {
-        if (Time.time > changeCellTime)
+        if (Time.time >= changeCellTime)
         {
+            Vector3 previousPosition = transform.position;
+
+            // Move o corpo da cobra seguindo a cabeça
             for (int i = body.Count - 1; i > 0; i--)
             {
                 body[i].position = body[i - 1].position;
             }
-            if (body.Count > 0) body[0].position = (Vector2)transform.position;
 
-            transform.position += (Vector3)direction * cellSize;
+            if (body.Count > 0)
+                body[0].position = previousPosition;
 
-            changeCellTime = Time.time + 1 / speed;
-            cellIndex = transform.position / cellSize;
+            // Move a cabeça na direção atual
+            transform.position += (Vector3)(direction * cellSize);
+
+            changeCellTime = Time.time + 1f / speed;
+
+            // Atualiza índice da célula baseado na posição da cabeça
+            cellIndex = new Vector2(
+                Mathf.Round(transform.position.x / cellSize),
+                Mathf.Round(transform.position.y / cellSize)
+            );
 
             CheckWallWrapAround();
         }
     }
-    void CheckWallWrapAround() // Metodo que verifica se a cobra atravessou a parede e ajusta a posicao.
+
+    void CheckWallWrapAround()
     {
         if (transform.position.x > gameWidth / 2)
             transform.position = new Vector3(-gameWidth / 2 + 0.01f, transform.position.y, transform.position.z);
@@ -81,88 +112,93 @@ public class Snake : MonoBehaviour // Classe responsavel por controlar o comport
         else if (transform.position.y < -gameHeight / 2)
             transform.position = new Vector3(transform.position.x, gameHeight / 2 - 0.01f, transform.position.z);
     }
-    public void GrowBody()  // Metodo responsavel por aumentar o corpo da cobra ao comer alimento.
+
+    public void GrowBody()
     {
         Vector2 position = transform.position;
-        if (body.Count != 0)
-            position = body[body.Count - 1].position;
 
-        body.Add(Instantiate(bodyPrefab, position, Quaternion.identity).transform);
+        if (body.Count > 0)
+        {
+            position = body[body.Count - 1].position;
+        }
+
+        Transform newBodyPart = Instantiate(bodyPrefab, position, Quaternion.identity);
+        body.Add(newBodyPart);
+
         gameManager.UpdateScore(1);
     }
-    void CheckBodyCollisions() // Metodo que verifica se a cobra colidiu com o proprio corpo.
+
+    void CheckBodyCollisions()
     {
         if (body.Count < 3) return;
+
         for (int i = 0; i < body.Count; i++)
         {
-            Vector2 index = body[i].position / cellSize;
-            if (Mathf.Abs(index.x - cellIndex.x)< 0.00001f && Mathf.Abs(index.y - cellIndex.y)<0.00001f)
+            Vector2 index = new Vector2(
+                Mathf.Round(body[i].position.x / cellSize),
+                Mathf.Round(body[i].position.y / cellSize)
+            );
+
+            if (Mathf.Approximately(index.x, cellIndex.x) && Mathf.Approximately(index.y, cellIndex.y))
             {
                 GameOver();
                 break;
             }
         }
     }
-    void GameOver() // Metodo que termina o jogo ao ocorrer uma colisao.
+
+    void GameOver()
     {
         gameOver = true;
         gameManager.GameOver();
-
     }
-    public void Restart() // Metodo responsavel por reiniciar o jogo e resetar o estado da cobra.
+
+    public void Restart()
     {
         gameOver = false;
 
-        // Limpar corpo da cobra
-        for (int i = 0; i < body.Count; ++i)
+        for (int i = 0; i < body.Count; i++)
         {
             Destroy(body[i].gameObject);
         }
+
         body.Clear();
 
-        // Resetar posicao da cobra
         transform.position = Vector3.zero;
+        direction = Vector2.up;
+        changeCellTime = 0;
     }
-    public float GetWidth() // Metodo que retorna a largura da area de jogo.
+
+    public void SetSpeed(float newSpeed)
     {
-        return gameWidth;
-    }
-    public float GetHeight()  // Metodo que retorna a altura da area de jogo.
-    {
-        return gameHeight;
-    }
-    public void SetSpeed(float newSpeed) // Metodo para ajustar a velocidade da cobra.
-    {
+        if (newSpeed <= 0f)
+        {
+            Debug.LogWarning("Speed must be greater than zero!");
+            return;
+        }
         speed = newSpeed;
     }
-    public void SetGameArea(float width, float height) // Metodo para ajustar a area de jogo.
-    {
-        // Ajuste a lógica para criar paredes com base nos novos valores
-        CreateWalls(width, height);
-    }
-    // Adicionar a matriz de grid para paredes
 
-
-    void CreateWalls(float width, float height)
+    public void SetGameArea(float width, float height)
     {
-        // Armazenar largura e altura da área de jogo
         gameWidth = width;
         gameHeight = height;
 
-        // Calcular os limites da área de jogo
+        CreateWalls(width, height);
+    }
+
+    void CreateWalls(float width, float height)
+    {
         int cellX = Mathf.FloorToInt(width / cellSize / 2);
         int cellY = Mathf.FloorToInt(height / cellSize / 2);
 
-        // Inicializar a matriz de grid para paredes com base no tamanho do campo
         wallGrid = new int[cellX * 2 + 1, cellY * 2 + 1];
 
-        // Limpar paredes existentes
         foreach (GameObject wall in GameObject.FindGameObjectsWithTag("Wall"))
         {
             Destroy(wall);
         }
 
-        // Criar paredes superior e inferior
         for (int i = -cellX; i <= cellX; i++)
         {
             Vector2 top = new Vector2(i * cellSize, cellY * cellSize);
@@ -171,12 +207,10 @@ public class Snake : MonoBehaviour // Classe responsavel por controlar o comport
             Instantiate(wallPrefab, top, Quaternion.identity).tag = "Wall";
             Instantiate(wallPrefab, bottom, Quaternion.identity).tag = "Wall";
 
-            // Marcar as posições das paredes na matriz
-            wallGrid[i + cellX, cellY] = 1;     // Parede superior
-            wallGrid[i + cellX, 0] = 1;         // Parede inferior
+            wallGrid[i + cellX, cellY] = 1;
+            wallGrid[i + cellX, 0] = 1;
         }
 
-        // Criar paredes esquerda e direita
         for (int i = -cellY; i <= cellY; i++)
         {
             Vector2 left = new Vector2(-cellX * cellSize, i * cellSize);
@@ -185,11 +219,18 @@ public class Snake : MonoBehaviour // Classe responsavel por controlar o comport
             Instantiate(wallPrefab, left, Quaternion.identity).tag = "Wall";
             Instantiate(wallPrefab, right, Quaternion.identity).tag = "Wall";
 
-            // Marcar as posições das paredes na matriz
-            wallGrid[0, i + cellY] = 1;         // Parede esquerda
-            wallGrid[cellX * 2, i + cellY] = 1; // Parede direita
+            wallGrid[0, i + cellY] = 1;
+            wallGrid[cellX * 2, i + cellY] = 1;
         }
     }
+    public float GetWidth()
+    {
+        return gameWidth;
+    }
+
+    public float GetHeight()
+    {
+        return gameHeight;
+    }
+
 }
-
-
